@@ -3,6 +3,30 @@ jobs:
   build:
     docker:
       - image: circleci/node:12
+    branches:
+      only:
+        - master
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - 54:29:f6:7d:1c:9f:63:11:5d:11:92:51:fb:66:7b:d4
       - checkout
-      - run: echo "hello world"
+      - restore_cache:
+          keys:
+            - dependencies_xinyzm
+      - run:
+          name: Install
+          command: yarn install
+      - save_cache:
+          paths:
+            - node_modules
+          key: dependencies_xinyzm
+      - run:
+          name: Build
+          command: yarn build
+      - run:
+          name: Prepare shell commands
+          command: chmod +x scripts/deploy.sh
+      - run:
+          name: Run Deploy to Github pages
+          command: ./scripts/deploy.sh
